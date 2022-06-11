@@ -1,4 +1,5 @@
 import prompt from "prompt";
+
 prompt.start();
 
 interface GetPromptProps extends prompt.RevalidatorSchema {
