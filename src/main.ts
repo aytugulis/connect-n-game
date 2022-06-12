@@ -1,42 +1,56 @@
 import { getPrompt } from "./helpers/prompt";
-import { Matrix } from "./helpers/Matrix";
-import { Move, Player } from "./types/Game";
-import colors from "@colors/colors/safe";
+import { Game } from "./helpers/Game";
+import { Move, NConnect } from "./types/Game";
 
 (async function () {
-  /*   // Getting N value
+  // Getting N value
   const nConnect = await getPrompt({
-    name: "Please type an N. Hint: N is the number of pieces that need to line up in order for a player to win",
+    name: "Please type an N.(Must be between 3 and 6) Hint: N is the number of pieces that need to line up in order for a player to win",
     required: true,
+    pattern: /^[3456]$/,
+    message: "N Connect must be between 3 and 6 and it is required.",
   });
 
   // Welcome message
   console.log(
     `You are playing Connect ${nConnect}! The first player to get ${nConnect} pieces of the same colorvertically, horizontally, or diagonally wins.`
-  ); */
+  );
 
-  // Creating matrix
-  const matrix = new Matrix();
+  // Creating game
+  const game = new Game(+nConnect as NConnect);
 
   // Game processing
-  let process = true;
-  let player = 1 as Player;
-  while (process) {
-    /*     matrix.log(); */
+  while (true) {
+    // Logging the matrix
+    game.log();
+
+    // Geting move value from the user
     const move = await getPrompt({
-      name: `Player ${player}'s turn`,
+      name: `Player ${game.currentPlayer}'s turn (between 0 and 6)`,
       required: true,
+      pattern: /^[0123456]$/,
+      message: "Move value must be between 0 and 6 and it is required.",
     });
 
-    const checking = matrix.checkMove(+move as Move);
-    console.log(checking);
-    if (!checking) console.log("IT IS NOT TRUE MOVE"); // maybe we can run this this loop again for one
+    // Checking move availability
+    const availability = game.checkMove(+move as Move);
+    if (!availability) {
+      console.log("Invalid move");
+      continue;
+    }
 
-    matrix.confirmMove(player);
-    matrix.log();
-    // Check game end
+    // Confirmin move if it is available
+    game.confirmMove();
 
-    // if it is valid move
-    player = player === 1 ? 2 : 1;
+    // Checking game ending or not
+    game.checkGameEnd();
+    if (game.getGameStatus) {
+      game.log();
+      console.log(game.getGameStatus);
+      break;
+    }
+
+    // If game is not over switch player and move up
+    game.switchPlayer();
   }
 })();
